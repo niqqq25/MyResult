@@ -1,0 +1,64 @@
+namespace MyResult.SourceGenerator.IntegrationTests;
+
+public record Error(string Message);
+
+[Result(typeof(Error))]
+public partial class ClassResult
+{
+}
+
+[Result(typeof(Error))]
+public partial class ClassResultOfTValue<TValue>
+{
+}
+
+[Result]
+public partial class ClassResultOfTValueTError<TValue, TError>
+{
+}
+
+[Result(typeof(Error))]
+public partial record RecordResult
+{
+}
+
+[Result(typeof(Error))]
+public partial record RecordResultOfTValue<TValue>
+{
+}
+
+[Result]
+public partial record RecordResultOfTValueTError<TValue, TError>
+{
+}
+
+[Result(typeof(Error))]
+public readonly partial struct ReadonlyStructResult
+{
+}
+
+[Result(typeof(Error))]
+public readonly partial struct ReadonlyStructResultOfTValue<TValue>
+{
+}
+
+[Result]
+public readonly partial struct ReadonlyStructResultOfTValueTError<TValue, TError>
+{
+}
+
+[Result(typeof(Error))]
+public readonly partial record struct ReadonlyRecordStructResult
+{
+}
+
+[Result(typeof(Error))]
+public readonly partial record struct ReadonlyRecordStructResultOfTValue<TValue>
+{
+}
+
+[Result]
+public readonly partial record struct ReadonlyRecordStructResultOfTValueTError<TValue, TError>
+{
+}
+

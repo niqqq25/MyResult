@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>MyResult</PackageId>
+        <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <Version>0.0.2</Version>
+        <PackageProjectUrl>https://github.com/niqqq25/MyResult</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/niqqq25/MyResult</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <licenses>https://opensource.org/licenses/MIT</licenses>
+        <PackageTags>result, results, pattern, error handling</PackageTags>
+        <Title>MyResult</Title>
+        <Description>A simple implementation of the Result pattern</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(targetframework)' == 'netstandard2.0'">
+        <PackageReference Include="PolySharp" Version="1.14.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+</Project>
