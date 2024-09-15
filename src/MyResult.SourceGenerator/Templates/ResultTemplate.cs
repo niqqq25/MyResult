@@ -74,6 +74,15 @@ internal static class ResultTemplate
                            """);
         }
 
+        if (context.IsSerializable)
+        {
+            var classNameWithGenerics = GetClassNameWithGenerics(context);
+            var jsonConverter = context.ValueType.HasValue
+                ? $"{classNameWithGenerics}JsonConverterFactory"
+                : $"{context.Name}JsonConverter";
+            sb.AppendLine($"    [System.Text.Json.Serialization.JsonConverter(typeof({jsonConverter}))]");
+        }
+
         sb.AppendLine($$"""
                             {{context.Modifiers}} {{context.TypeSymbol.ToConstruct()}} {{nameWithGenericTypeParameters}} : {{interfaces}}
                             {
@@ -127,8 +136,6 @@ internal static class ResultTemplate
                                         }
                                     }
                             
-                                    [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(false, nameof(_value))]
-                                    [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(false, nameof(Value))]
                             """);
         }
 
@@ -137,6 +144,17 @@ internal static class ResultTemplate
                               /// Checks whether the result represents a failed operation.
                               /// </summary>
                               /// <returns><c>true</c> if the operation failed; otherwise, <c>false</c>.</returns>
+                      """);
+
+        if (context.ValueType.HasValue)
+        {
+            sb.AppendLine("""
+                                  [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(false, nameof(_value))]
+                                  [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(false, nameof(Value))]
+                          """);
+        }
+
+        sb.AppendLine("""
                               [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(_error))]
                               [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(Error))]
                               public bool IsFailure => !IsSuccess;
@@ -173,7 +191,7 @@ internal static class ResultTemplate
                         /// <returns>A new instance of <see cref="{{context.Name}}"/> representing a successful operation.</returns>
                         public static {{nameWithGenericTypeParameters}} Ok({{context.ValueType.Value.Name}} value)
                         {
-                            return new {{nameWithGenericTypeParameters}}(value, default)
+                            return new {{nameWithGenericTypeParameters}}(value, default({{context.ErrorType.Name}}))
                             {
                                 IsSuccess = true
                             };
@@ -196,7 +214,7 @@ internal static class ResultTemplate
                         /// <returns>A new instance of <see cref="{{context.Name}}"/> representing a successful operation.</returns>
                         public static {{nameWithGenericTypeParameters}} Ok()
                         {
-                            return new {{nameWithGenericTypeParameters}}(default)
+                            return new {{nameWithGenericTypeParameters}}(default({{context.ErrorType.Name}}))
                             {
                                 IsSuccess = true
                             };
@@ -268,6 +286,11 @@ internal static class ResultTemplate
         }
 
         sb.AppendLine("    }");
+
+        if (context.IsSerializable)
+        {
+            GenerateJsonConverter(context, sb);   
+        }
 
         if (context.Namespace is not null)
         {
@@ -353,7 +376,7 @@ internal static class ResultTemplate
             sb.AppendLine($$"""
                                     public static implicit operator {{nameWithGenericTypeParameters}}({{context.ValueType.Value.Name}} value)
                                     {
-                                        return {{nameWithGenericTypeParameters}}.Ok(value);
+                                        return Ok(value);
                                     }
 
                             """);
@@ -364,7 +387,7 @@ internal static class ResultTemplate
             sb.AppendLine($$"""
                                     public static implicit operator {{nameWithGenericTypeParameters}}({{context.ErrorType.Name}} error)
                                     {
-                                        return {{nameWithGenericTypeParameters}}.Fail(error);
+                                        return Fail(error);
                                     }
 
                             """);
@@ -392,5 +415,128 @@ internal static class ResultTemplate
         sb.AppendLine("""{(IsFailure ? $", Error = {_error.ToString()}" : string.Empty)} }}";""");
         sb.AppendLine("        }");
         sb.AppendLine();
+    }
+
+    private static void GenerateJsonConverter(in ResultContext context, StringBuilder sb)
+    {
+        var nameWithEmptyGenerics = context.ErrorType.IsGeneric
+            ? $"{context.Name}<,>"
+            : context.ValueType.HasValue
+                ? $"{context.Name}<>"
+                : context.Name;
+        
+        var classNameWithGenerics = GetClassNameWithGenerics(context);
+
+        if (context.ValueType.HasValue)
+        {
+            sb.AppendLine($$"""
+                            
+                                public sealed class {{classNameWithGenerics}}JsonConverterFactory : System.Text.Json.Serialization.JsonConverterFactory
+                                {
+                                    public override bool CanConvert(Type typeToConvert)
+                                    {
+                                        return typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof({{nameWithEmptyGenerics}});
+                                    }
+                                
+                                    public override System.Text.Json.Serialization.JsonConverter CreateConverter(Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+                                    {
+                                        var genericArgument = typeToConvert.GetGenericArguments()[0];
+                            """);
+
+            sb.AppendLine(context.ErrorType.IsGeneric
+                ? $"""
+                              var genericArgument1 = typeToConvert.GetGenericArguments()[1];
+                              var converterType = typeof({classNameWithGenerics}JsonConverter<,>).MakeGenericType(genericArgument, genericArgument1);
+                  """
+                : $"            var converterType = typeof({classNameWithGenerics}JsonConverter<>).MakeGenericType(genericArgument);");
+
+            sb.AppendLine("""
+                                      return (System.Text.Json.Serialization.JsonConverter)Activator.CreateInstance(converterType)!;
+                                  }
+                              }
+                          """);
+        }
+
+        var generics = context.ErrorType.IsGeneric
+            ? "<TValue, TError>"
+            : context.ValueType.HasValue
+                ? "<TValue>"
+                : string.Empty;
+
+        sb.AppendLine($$"""
+                        
+                            public sealed class {{classNameWithGenerics}}JsonConverter{{generics}} : System.Text.Json.Serialization.JsonConverter<{{context.Name}}{{generics}}>
+                            {
+                                public override {{context.Name}}{{generics}} Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+                                {
+                                    using var document = System.Text.Json.JsonDocument.ParseValue(ref reader);
+                            
+                                    var root = document.RootElement;
+                            
+                                    var isSuccess = root.GetProperty("IsSuccess").GetBoolean();
+                            
+                                    if (isSuccess)
+                                    {
+                        """);
+
+        sb.AppendLine(context.ValueType.HasValue
+            ? $"""
+                               var value = System.Text.Json.JsonSerializer.Deserialize<TValue>(root.GetProperty("Value"));
+                               return {context.Name}{generics}.Ok(value!);
+               """
+            : $"                return {context.Name}.Ok();");
+
+        var errorName = context.ErrorType.IsGeneric ? "TError" : context.ErrorType.Name;
+
+        sb.AppendLine($$"""
+                                    }
+                                    
+                                    var error = System.Text.Json.JsonSerializer.Deserialize<{{errorName}}>(root.GetProperty("Error"));
+                                    return {{context.Name}}{{generics}}.Fail(error!);
+                                }
+                                
+                                public override void Write(System.Text.Json.Utf8JsonWriter writer, {{context.Name}}{{generics}} value, System.Text.Json.JsonSerializerOptions options)
+                                {
+                                    writer.WriteStartObject();
+                                    
+                                    writer.WriteBoolean(nameof(value.IsSuccess), value.IsSuccess);
+                                
+                        """);
+
+        if (context.ValueType.HasValue)
+        {
+            sb.AppendLine("""
+                                      if (value.IsSuccess)
+                                      {
+                                          writer.WritePropertyName(nameof(value.Value));
+                                          System.Text.Json.JsonSerializer.Serialize(writer, value.Value, options);
+                                      }
+                                      
+                          """);
+        }
+
+        sb.AppendLine("""
+                                  if (value.IsFailure)
+                                  {
+                                      writer.WritePropertyName(nameof(value.Error));
+                                      System.Text.Json.JsonSerializer.Serialize(writer, value.Error, options);
+                                  }
+                                  
+                                  writer.WriteEndObject();
+                              }
+                          }
+                      """);
+    }
+
+    private static string GetClassNameWithGenerics(in ResultContext context)
+    {
+        if (context.ValueType.HasValue is false)
+        {
+            return context.Name;
+        }
+        
+        return context.ErrorType.IsGeneric
+            ? $"{context.Name}OfTValueTError"
+            : $"{context.Name}OfTValue";
     }
 }

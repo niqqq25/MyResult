@@ -19,7 +19,8 @@ var resultContext = new ResultContext(
     new ErrorType("Error", false, false),
     valueType: null,
     hasToStringOverride: false,
-    hasImplicitConversion: true);
+    hasImplicitConversion: true,
+    isSerializable: true);
 
 const string resultAdditionalCode = """
                                    public static Result<TValue> Ok<TValue>(TValue value)
@@ -55,7 +56,8 @@ var resultOfTValueContext = new ResultContext(
     new ErrorType("Error", false, false),
     new ValueType("TValue"),
     hasToStringOverride: false,
-    hasImplicitConversion: true);
+    hasImplicitConversion: true,
+    isSerializable: true);
 
 File.WriteAllText(
     Path.Combine(sourceRoot, "MyResult", $"{name}`1.cs"),
@@ -69,7 +71,8 @@ var resultOfTValueTErrorContext = new ResultContext(
     new ErrorType("TError", false, true),
     new ValueType("TValue"),
     hasToStringOverride: false,
-    hasImplicitConversion: true);
+    hasImplicitConversion: true,
+    isSerializable: true);
 
 File.WriteAllText(
     Path.Combine(sourceRoot, "MyResult", $"{name}`2.cs"),

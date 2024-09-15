@@ -7,6 +7,7 @@ namespace MyResult
     /// <summary>
     /// Represents the result of an operation, which can either be a success or a failure.
     /// </summary>
+    [System.Text.Json.Serialization.JsonConverter(typeof(ResultJsonConverter))]
     public readonly record struct Result : IEquatable<Result>, IResult
     {
         private readonly Error? _error;
@@ -66,7 +67,7 @@ namespace MyResult
 
         public static implicit operator Result(Error error)
         {
-            return Result.Fail(error);
+            return Fail(error);
         }
 
         [System.Obsolete("Must not be used without parameters", true)]
@@ -106,6 +107,41 @@ namespace MyResult
         public static Result<TValue, TError> Fail<TValue, TError>(TError error)
         {
             return Result<TValue, TError>.Fail(error);
+        }
+    }
+
+    public sealed class ResultJsonConverter : System.Text.Json.Serialization.JsonConverter<Result>
+    {
+        public override Result Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+        {
+            using var document = System.Text.Json.JsonDocument.ParseValue(ref reader);
+    
+            var root = document.RootElement;
+    
+            var isSuccess = root.GetProperty("IsSuccess").GetBoolean();
+    
+            if (isSuccess)
+            {
+                return Result.Ok();
+            }
+            
+            var error = System.Text.Json.JsonSerializer.Deserialize<Error>(root.GetProperty("Error"));
+            return Result.Fail(error!);
+        }
+        
+        public override void Write(System.Text.Json.Utf8JsonWriter writer, Result value, System.Text.Json.JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            
+            writer.WriteBoolean(nameof(value.IsSuccess), value.IsSuccess);
+        
+            if (value.IsFailure)
+            {
+                writer.WritePropertyName(nameof(value.Error));
+                System.Text.Json.JsonSerializer.Serialize(writer, value.Error, options);
+            }
+            
+            writer.WriteEndObject();
         }
     }
 }

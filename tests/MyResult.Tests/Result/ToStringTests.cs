@@ -19,12 +19,13 @@ public sealed class ToStringTests
     public void ToString_ResultIsFailure_ReturnsCorrectString()
     {
         // Arrange
-        var result = MyResult.Result.Fail(new MyResult.Error("code", "description"));
+        var error = new MyResult.Error("code", "description");
+        var result = MyResult.Result.Fail(error);
 
         // Act
         var str = result.ToString();
 
         // Assert
-        Assert.Equal("Result { IsSuccess = False, Error = Error { Code = code, Description = description } }", str);
+        Assert.Equal($$"""Result { IsSuccess = False, Error = {{error}} }""", str);
     }
 }

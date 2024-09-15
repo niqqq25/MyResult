@@ -1,4 +1,6 @@
-﻿namespace MyResult;
+﻿using System.Text.Json.Serialization;
+
+namespace MyResult;
 
 /// <summary>
 /// Represents an error.
@@ -25,6 +27,7 @@ public class Error
         Metadata = metadata;
     }
     
+    [JsonConstructor]
     public Error(
         string code,
         string description,

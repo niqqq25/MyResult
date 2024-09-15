@@ -21,7 +21,8 @@ public sealed class ResultContextTests
                 errorType: new ErrorType("MyError", false, true),
                 valueType: new ValueType("Hello world"),
                 hasToStringOverride: true,
-                hasImplicitConversion: true);
+                hasImplicitConversion: true,
+                isSerializable: true);
     }
 
     [Fact]
@@ -35,7 +36,8 @@ public sealed class ResultContextTests
             errorType: new ErrorType("MyError", false, true),
             valueType: new ValueType("Hello world"),
             hasToStringOverride: true,
-            hasImplicitConversion: true);
+            hasImplicitConversion: true,
+            isSerializable: true);
 
         var instance2 = new ResultContext (
             name: "MyStruct",
@@ -45,7 +47,8 @@ public sealed class ResultContextTests
             errorType: new ErrorType("MyErrorr", false, true),
             valueType: new ValueType("Hello world"),
             hasToStringOverride: true,
-            hasImplicitConversion: true);
+            hasImplicitConversion: true,
+            isSerializable: true);
 
         Assert.NotEqual(instance1, instance2);
         Assert.False(instance1.Equals(instance2));

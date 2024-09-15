@@ -74,12 +74,13 @@ public sealed class ResultSourceGenerator : IIncrementalGenerator
                 ? new ValueType(dataTypeParameter.Name)
                 : null,
             symbolInformation.GetOverriddenToStringMethod() is not null,
-            attributeData.HasImplicitConversion);
+            attributeData.HasImplicitConversion,
+            attributeData.IsSerializable);
     }
 
     private static AttributeData GetAttributeData(INamedTypeSymbol namedTypeSymbol) // TODO
     {
-        const int attributeArgsCount = 2;
+        const int attributeArgsCount = 3;
 
         var attributeData = namedTypeSymbol.GetAttributes()
             .Single(a => a.AttributeClass?.Name == ResultAttributeTemplate.Name);
@@ -105,9 +106,17 @@ public sealed class ResultSourceGenerator : IIncrementalGenerator
                 $"Expected {nameof(hasImplicitConversion)} to be boolean. It is a {hasImplicitConversion.Kind}.");
         }
 
+        var isSerializable = args[2];
+        if (isSerializable.Kind is not TypedConstantKind.Primitive || isSerializable.Value is not bool)
+        {
+            throw new FormatException(
+                $"Expected {nameof(isSerializable)} to be boolean. It is a {isSerializable.Kind}.");
+        }
+
         return new AttributeData(
             errorType.Value is not null ? (INamedTypeSymbol)errorType.Value! : null,
-            (bool)hasImplicitConversion.Value);
+            (bool)hasImplicitConversion.Value,
+            (bool)isSerializable.Value);
     }
 
     private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
@@ -121,10 +130,15 @@ public sealed class ResultSourceGenerator : IIncrementalGenerator
             or SyntaxKind.StructDeclaration;
     }
 
-    private readonly struct AttributeData(INamedTypeSymbol? errorTypeSymbol, bool hasImplicitConversion)
+    private readonly record struct AttributeData(
+        INamedTypeSymbol? ErrorTypeSymbol,
+        bool HasImplicitConversion,
+        bool IsSerializable)
     {
-        public INamedTypeSymbol? ErrorTypeSymbol { get; } = errorTypeSymbol;
+        public INamedTypeSymbol? ErrorTypeSymbol { get; } = ErrorTypeSymbol;
 
-        public bool HasImplicitConversion { get; } = hasImplicitConversion;
+        public bool HasImplicitConversion { get; } = HasImplicitConversion;
+
+        public bool IsSerializable { get; } = IsSerializable;
     }
 }

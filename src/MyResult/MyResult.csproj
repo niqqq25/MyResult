@@ -6,22 +6,30 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <Version>0.0.2</Version>
+        <Version>0.0.3</Version>
         <PackageProjectUrl>https://github.com/niqqq25/MyResult</PackageProjectUrl>
         <RepositoryUrl>https://github.com/niqqq25/MyResult</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <licenses>https://opensource.org/licenses/MIT</licenses>
-        <PackageTags>result, results, pattern, error handling</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageTags>result results pattern error handling</PackageTags>
         <Title>MyResult</Title>
-        <Description>A simple implementation of the Result pattern</Description>
+        <Description>A simple but powerful implementation of the Result pattern.</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../LICENSE" Pack="true" PackagePath=""/>
+    </ItemGroup>
 
     <ItemGroup Condition="'$(targetframework)' == 'netstandard2.0'">
         <PackageReference Include="PolySharp" Version="1.14.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Text.Json" Version="8.0.4" />
     </ItemGroup>
 
 </Project>

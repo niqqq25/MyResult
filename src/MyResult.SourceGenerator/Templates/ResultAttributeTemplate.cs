@@ -20,7 +20,7 @@ internal static class ResultAttributeTemplate
                    [System.AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
                    internal sealed class {{Name}} : System.Attribute
                    {
-                       public {{Name}}(Type? errorType = null, bool hasImplicitConversion = true)
+                       public {{Name}}(Type? errorType = null, bool hasImplicitConversion = true, bool isSerializable = false)
                        {
                        }
                    }

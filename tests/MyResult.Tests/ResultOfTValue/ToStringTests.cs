@@ -6,25 +6,27 @@ public sealed class ToStringTests
     public void ToString_ResultIsSuccess_ReturnsCorrectString()
     {
         // Arrange
-        var result = Result<int>.Ok(5);
+        const int value = 5;
+        var result = Result<int>.Ok(value);
 
         // Act
         var str = result.ToString();
 
         // Assert
-        Assert.Equal("Result { IsSuccess = True, Value = 5 }", str);
+        Assert.Equal($$"""Result { IsSuccess = True, Value = {{value}} }""", str);
     }
 
     [Fact]
     public void ToString_ResultIsFailure_ReturnsCorrectString()
     {
         // Arrange
-        var result = Result<int>.Fail(new MyResult.Error("code", "description"));
+        var error = new MyResult.Error("code", "description");
+        var result = Result<int>.Fail(error);
 
         // Act
         var str = result.ToString();
 
         // Assert
-        Assert.Equal("Result { IsSuccess = False, Error = Error { Code = code, Description = description } }", str);
+        Assert.Equal($$"""Result { IsSuccess = False, Error = {{error}} }""", str);
     }
 }

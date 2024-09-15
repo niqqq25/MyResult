@@ -2,17 +2,17 @@ namespace MyResult.SourceGenerator.IntegrationTests;
 
 public record Error(string Message);
 
-[Result(typeof(Error))]
+[Result(typeof(Error), isSerializable: true)]
 public partial class ClassResult
 {
 }
 
-[Result(typeof(Error))]
+[Result(typeof(Error), isSerializable: true)]
 public partial class ClassResultOfTValue<TValue>
 {
 }
 
-[Result]
+[Result(isSerializable: true)]
 public partial class ClassResultOfTValueTError<TValue, TError>
 {
 }

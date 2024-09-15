@@ -10,7 +10,8 @@ internal readonly record struct ResultContext // TODO
         ErrorType errorType,
         ValueType? valueType,
         bool hasToStringOverride,
-        bool hasImplicitConversion)
+        bool hasImplicitConversion,
+        bool isSerializable)
     {
         Name = name;
         TypeSymbol = typeSymbol;
@@ -20,6 +21,7 @@ internal readonly record struct ResultContext // TODO
         ValueType = valueType;
         HasToStringOverride = hasToStringOverride;
         HasImplicitConversion = hasImplicitConversion;
+        IsSerializable = isSerializable;
     }
 
     ///<summary></summary>
@@ -40,6 +42,8 @@ internal readonly record struct ResultContext // TODO
     public bool HasToStringOverride { get; }
 
     public bool HasImplicitConversion { get; }
+    
+    public bool IsSerializable { get; }
 }
 
 internal readonly record struct ErrorType(string Name, bool IsInterface, bool IsGeneric)
