@@ -2,6 +2,8 @@ namespace MyResult.SourceGenerator.IntegrationTests;
 
 public record Error(string Message);
 
+public record DerivedError(string Message, string ExtraField) : Error(Message);
+
 [Result(typeof(Error), isSerializable: true)]
 public partial class ClassResult
 {

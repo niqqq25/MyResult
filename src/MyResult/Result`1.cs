@@ -72,7 +72,7 @@ namespace MyResult
         /// <returns>A new instance of <see cref="Result"/> representing a successful operation.</returns>
         public static Result<TValue> Ok(TValue value)
         {
-            return new Result<TValue>(value, default)
+            return new Result<TValue>(value, default(Error))
             {
                 IsSuccess = true
             };
@@ -165,13 +165,13 @@ namespace MyResult
             if (value.IsSuccess)
             {
                 writer.WritePropertyName(nameof(value.Value));
-                System.Text.Json.JsonSerializer.Serialize(writer, value.Value, options);
+                System.Text.Json.JsonSerializer.Serialize(writer, value.Value, value.Value.GetType(), options);
             }
             
             if (value.IsFailure)
             {
                 writer.WritePropertyName(nameof(value.Error));
-                System.Text.Json.JsonSerializer.Serialize(writer, value.Error, options);
+                System.Text.Json.JsonSerializer.Serialize(writer, value.Error, value.Error.GetType(), options);
             }
             
             writer.WriteEndObject();

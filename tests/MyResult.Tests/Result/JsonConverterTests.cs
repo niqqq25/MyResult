@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using MyResult.Tests.Error;
 
 namespace MyResult.Tests.Result;
 
@@ -22,6 +23,23 @@ public sealed class JsonConverterTests
     {
         // Arrange
         var error = new MyResult.Error("Code", "Description");
+        var serializedError = JsonSerializer.Serialize(error);
+        MyResult.Result result = error;
+        
+        // Act
+        var serializedResult = JsonSerializer.Serialize(result);
+        
+        // Assert
+        Assert.Equal(
+            $$"""{"IsSuccess":false,"Error":{{serializedError}}}""",
+            serializedResult);
+    }
+
+    [Fact]
+    public void Serialize_ResultWithDerivedError_ReturnsSerializedResultWithDerivedProperty()
+    {
+        // Arrange
+        var error = new DerivedError("Code", "Description", "Extra");
         var serializedError = JsonSerializer.Serialize(error);
         MyResult.Result result = error;
         

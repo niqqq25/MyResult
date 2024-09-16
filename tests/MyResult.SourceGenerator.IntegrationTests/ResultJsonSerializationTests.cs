@@ -139,6 +139,42 @@ public sealed class ResultJsonSerializationTests
         Assert.Equal($$"""{"IsSuccess":false,"Error":{{serializedError}}}""", serializedResult);
         Assert.Throws<NotSupportedException>(resultDeserialization);
     }
+
+    [Fact]
+    public void JsonSerialization_ResultWithDerivedValue_SerializesDerivedPropertiesAndDeserializes()
+    {
+        // Arrange
+        var value = new DerivedError("Error", "Extra");
+        var serializedValue = JsonSerializer.Serialize(value);
+        var result = ClassResultOfTValue<Error>.Ok(value);
+        
+        // Act
+        var serializedResult = JsonSerializer.Serialize(result);
+        var deserializedResult = JsonSerializer.Deserialize<ClassResultOfTValue<Error>>(serializedResult)!;
+        
+        // Assert
+        Assert.Equal($$"""{"IsSuccess":true,"Value":{{serializedValue}}}""", serializedResult);
+        Assert.True(deserializedResult.IsSuccess);
+        Assert.Equal(value.Message, deserializedResult.Value.Message);
+    }
+
+    [Fact]
+    public void JsonSerialization_ResultWithDerivedError_SerializesDerivedPropertiesAndDeserializes()
+    {
+        // Arrange
+        var error = new DerivedError("Error", "Extra");
+        var serializedError = JsonSerializer.Serialize(error);
+        var result = ClassResult.Fail(error);
+        
+        // Act
+        var serializedResult = JsonSerializer.Serialize(result);
+        var deserializedResult = JsonSerializer.Deserialize<ClassResult>(serializedResult)!;
+        
+        // Assert
+        Assert.Equal($$"""{"IsSuccess":false,"Error":{{serializedError}}}""", serializedResult);
+        Assert.False(deserializedResult.IsSuccess);
+        Assert.Equal(error.Message, deserializedResult.Error.Message);
+    }
 }
 
 public interface ISerializableResultError

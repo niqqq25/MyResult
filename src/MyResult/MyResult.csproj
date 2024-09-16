@@ -6,7 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <Version>0.0.3</Version>
+        <Version>0.0.4</Version>
         <PackageProjectUrl>https://github.com/niqqq25/MyResult</PackageProjectUrl>
         <RepositoryUrl>https://github.com/niqqq25/MyResult</RepositoryUrl>
         <RepositoryType>git</RepositoryType>

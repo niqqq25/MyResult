@@ -509,7 +509,7 @@ internal static class ResultTemplate
                                       if (value.IsSuccess)
                                       {
                                           writer.WritePropertyName(nameof(value.Value));
-                                          System.Text.Json.JsonSerializer.Serialize(writer, value.Value, options);
+                                          System.Text.Json.JsonSerializer.Serialize(writer, value.Value, value.Value.GetType(), options);
                                       }
                                       
                           """);
@@ -519,7 +519,7 @@ internal static class ResultTemplate
                                   if (value.IsFailure)
                                   {
                                       writer.WritePropertyName(nameof(value.Error));
-                                      System.Text.Json.JsonSerializer.Serialize(writer, value.Error, options);
+                                      System.Text.Json.JsonSerializer.Serialize(writer, value.Error, value.Error.GetType(), options);
                                   }
                                   
                                   writer.WriteEndObject();
